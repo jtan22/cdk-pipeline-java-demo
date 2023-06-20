@@ -4,13 +4,11 @@ import software.amazon.awscdk.App;
 import software.amazon.awscdk.Environment;
 import software.amazon.awscdk.StackProps;
 
-import java.util.Arrays;
-
 public class CdkPipelineJavaDemoApp {
     public static void main(final String[] args) {
         App app = new App();
 
-        new CdkPipelineJavaDemoStack(app, "CdkPipelineJavaDemoStack", StackProps.builder()
+        new CodePipelineStack(app, "CdkPipelineJavaDemoStack", StackProps.builder()
                 // If you don't specify 'env', this stack will be environment-agnostic.
                 // Account/Region-dependent features and context lookups will not work,
                 // but a single synthesized template can be deployed anywhere.

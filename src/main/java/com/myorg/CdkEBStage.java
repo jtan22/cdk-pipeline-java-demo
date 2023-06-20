@@ -9,7 +9,7 @@ public class CdkEBStage extends Stage {
     public CdkEBStage(final Construct scope, final String id, final StageProps stageProps) {
         super(scope, id, stageProps);
 
-        new EBApplnStack(this, "WebService", null);
+        new EBWebAppStack(this, "EBWebAppService", null);
     }
 
 }
