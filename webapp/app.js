@@ -11,7 +11,7 @@ app.get('/', function (req, res) {
 });
 
 app.get('/test', function (req, res) {
-    res.send('the REST endpoint test run!');
+    res.send('the REST endpoint test run updated!');
 });
 
 app.listen(port, function() {
