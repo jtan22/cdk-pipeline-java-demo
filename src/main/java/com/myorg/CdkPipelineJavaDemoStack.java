@@ -28,7 +28,7 @@ public class CdkPipelineJavaDemoStack extends Stack {
                         ShellStepProps.builder().
                                 input(CodePipelineSource.gitHub("jtan22/cdk-pipeline-java-demo", "main")).
                                 installCommands(Collections.singletonList("npm i -g npm@latest")).
-                                commands(Arrays.asList("npm ci", "npm run build", "npx cdk synth")).
+                                commands(Collections.singletonList("npx cdk synth")).
                                 build())).
                 build();
 //        CdkEBStage stage = new CdkEBStage(this, "Pre-Prod", null);
