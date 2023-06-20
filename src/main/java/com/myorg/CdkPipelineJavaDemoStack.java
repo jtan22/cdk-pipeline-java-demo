@@ -1,10 +1,15 @@
 package com.myorg;
 
+import software.amazon.awscdk.pipelines.CodePipeline;
+import software.amazon.awscdk.pipelines.CodePipelineSource;
+import software.amazon.awscdk.pipelines.ShellStep;
+import software.amazon.awscdk.pipelines.ShellStepProps;
 import software.constructs.Construct;
 import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.StackProps;
-// import software.amazon.awscdk.Duration;
-// import software.amazon.awscdk.services.sqs.Queue;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 public class CdkPipelineJavaDemoStack extends Stack {
     public CdkPipelineJavaDemoStack(final Construct scope, final String id) {
@@ -16,9 +21,17 @@ public class CdkPipelineJavaDemoStack extends Stack {
 
         // The code that defines your stack goes here
 
-        // example resource
-        // final Queue queue = Queue.Builder.create(this, "CdkPipelineJavaDemoQueue")
-        //         .visibilityTimeout(Duration.seconds(300))
-        //         .build();
+        CodePipeline pipeline = CodePipeline.Builder.
+                create(this, "Pipeline").
+                pipelineName("MyServicePipeline").
+                synth(new ShellStep("Synth",
+                        ShellStepProps.builder().
+                                input(CodePipelineSource.gitHub("jtan22/cdk-pipeline-java-demo", "main")).
+                                installCommands(Collections.singletonList("npm i -g npm@latest")).
+                                commands(Arrays.asList("npm ci", "npm run build", "npx cdk synth")).
+                                build())).
+                build();
+        CdkEBStage stage = new CdkEBStage(this, "Pre-Prod", null);
+        pipeline.addStage(stage);
     }
 }
