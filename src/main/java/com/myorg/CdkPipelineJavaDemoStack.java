@@ -31,7 +31,7 @@ public class CdkPipelineJavaDemoStack extends Stack {
                                 commands(Collections.singletonList("npx cdk synth")).
                                 build())).
                 build();
-//        CdkEBStage stage = new CdkEBStage(this, "Pre-Prod", null);
-//        pipeline.addStage(stage);
+        CdkEBStage stage = new CdkEBStage(this, "Pre-Prod", null);
+        pipeline.addStage(stage);
     }
 }
