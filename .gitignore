@@ -11,3 +11,6 @@ target
 .cdk.staging
 cdk.out
 
+!webapp/*
+webapp/package-lock.json
+webapp/node_modules
