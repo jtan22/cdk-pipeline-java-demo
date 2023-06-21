@@ -15,10 +15,21 @@ import software.constructs.Construct;
 import java.util.Arrays;
 import java.util.Collections;
 
+/**
+ * Create Beanstalk stack, it's application and environment.
+ */
 public class EBWebAppStack extends Stack {
 
     private static final String APP_NAME = "EBWebApp";
+    private static final String APP_VERSION_ID = "EBWebApp-Version";
     private static final String PROFILE_NAME = "EBWebApp-InstanceProfile";
+    private static final String ZIP_ID = "EBWebAppZip";
+    private static final String WEB_APP_PATH = "${__dirname}/../webapp";
+    private static final String EC2_ROLE_NAME = "EBWebApp-aws-elasticbeanstalk-ec2-role";
+    private static final String EC2_SERVICE_NAME = "ec2.amazonaws.com";
+    private static final String EC2_POLICY_NAME = "AWSElasticBeanstalkWebTier";
+    private static final String ENVIRONMENT_NAME = "EBWebApp-Environment";
+    private static final String SOLUTION_STACK_NAME = "64bit Amazon Linux 2 v5.8.2 running Node.js 18";
 
     public EBWebAppStack(final Construct scope, final String id, final StackProps stackProps) {
         super(scope, id, stackProps);
@@ -26,29 +37,29 @@ public class EBWebAppStack extends Stack {
         CfnApplicationVersion appVersion = createAppVersion();
         appVersion.addDependency(createApp());
         createProfile();
-        createEnvironment(appVersion);
+        createEnvironment(appVersion.getRef());
     }
 
     private CfnApplication createApp() {
-        return CfnApplication.Builder.create(this, "EBApplication").applicationName(APP_NAME).build();
+        return CfnApplication.Builder.create(this, APP_NAME).applicationName(APP_NAME).build();
     }
 
     private CfnApplicationVersion createAppVersion() {
-        Asset webAppZipArchive = Asset.Builder.create(this, "EBWebAppZip").
-                path("${__dirname}/../webapp").build();
+        Asset webAppZip = Asset.Builder.create(this, ZIP_ID).
+                path(WEB_APP_PATH).build();
         CfnApplicationVersion.SourceBundleProperty sourceBundle = CfnApplicationVersion.SourceBundleProperty.builder().
-                s3Bucket(webAppZipArchive.getS3BucketName()).
-                s3Key(webAppZipArchive.getS3ObjectKey()).
+                s3Bucket(webAppZip.getS3BucketName()).
+                s3Key(webAppZip.getS3ObjectKey()).
                 build();
-        return CfnApplicationVersion.Builder.create(this, "EBWebAppVersion").
+        return CfnApplicationVersion.Builder.create(this, APP_VERSION_ID).
                 applicationName(APP_NAME).
                 sourceBundle(sourceBundle).build();
     }
 
     private void createProfile() {
-        Role role = Role.Builder.create(this, "EBWebApp-aws-elasticbeanstalk-ec2-role").
-                assumedBy(ServicePrincipal.Builder.create("ec2.amazonaws.com").build()).build();
-        role.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName("AWSElasticBeanstalkWebTier"));
+        Role role = Role.Builder.create(this, EC2_ROLE_NAME).
+                assumedBy(ServicePrincipal.Builder.create(EC2_SERVICE_NAME).build()).build();
+        role.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName(EC2_POLICY_NAME));
         CfnInstanceProfile.Builder.create(this, PROFILE_NAME).
                 instanceProfileName(PROFILE_NAME).
                 roles(Collections.singletonList(role.getRoleName())).build();
@@ -60,51 +71,39 @@ public class EBWebAppStack extends Stack {
      * Run this aws command to get a list of solution stack names:
      *      aws elasticbeanstalk list-available-solution-stacks
      *
-     * @param appVersion
+     * @param versionLabel
      */
-    private void createEnvironment(CfnApplicationVersion appVersion) {
-        CfnEnvironment.Builder.create(this, "EBWebAppEnvironment").
-                environmentName("EBWebAppEnvironment").
+    private void createEnvironment(String versionLabel) {
+        CfnEnvironment.Builder.create(this, ENVIRONMENT_NAME).
+                environmentName(ENVIRONMENT_NAME).
                 applicationName(APP_NAME).
-                solutionStackName("64bit Amazon Linux 2 v5.8.2 running Node.js 18").
+                solutionStackName(SOLUTION_STACK_NAME).
                 optionSettings(Arrays.asList(
                         createOptionSettingProfile(),
                         createOptionSettingMinSize(),
                         createOptionSettingMaxSize(),
                         createOptionSettingInstanceType())).
-                versionLabel(appVersion.getRef()).
+                versionLabel(versionLabel).
                 build();
     }
 
     private CfnEnvironment.OptionSettingProperty createOptionSettingProfile() {
         return CfnEnvironment.OptionSettingProperty.builder().
-                namespace("aws:autoscaling:launchconfiguration").
-                optionName("IamInstanceProfile").
-                value(PROFILE_NAME).
-                build();
+                namespace("aws:autoscaling:launchconfiguration").optionName("IamInstanceProfile").value(PROFILE_NAME).build();
     }
 
     private CfnEnvironment.OptionSettingProperty createOptionSettingMinSize() {
         return CfnEnvironment.OptionSettingProperty.builder().
-                namespace("aws:autoscaling:asg").
-                optionName("MinSize").
-                value("1").
-                build();
+                namespace("aws:autoscaling:asg").optionName("MinSize").value("1").build();
     }
 
     private CfnEnvironment.OptionSettingProperty createOptionSettingMaxSize() {
         return CfnEnvironment.OptionSettingProperty.builder().
-                namespace("aws:autoscaling:asg").
-                optionName("MaxSize").
-                value("2").
-                build();
+                namespace("aws:autoscaling:asg").optionName("MaxSize").value("2").build();
     }
 
     private CfnEnvironment.OptionSettingProperty createOptionSettingInstanceType() {
         return CfnEnvironment.OptionSettingProperty.builder().
-                namespace("aws:ec2:instances").
-                optionName("InstanceTypes").
-                value("t2.micro").
-                build();
+                namespace("aws:ec2:instances").optionName("InstanceTypes").value("t2.micro").build();
     }
 }
