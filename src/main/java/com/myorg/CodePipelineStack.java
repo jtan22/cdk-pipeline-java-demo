@@ -15,7 +15,7 @@ public class CodePipelineStack extends Stack {
     private static final String GITHUB_REPO = "jtan22/cdk-pipeline-java-demo";
     private static final String GITHUB_BRANCH = "main";
     private static final String INSTALL_COMMAND = "npm i -g npm@latest";
-    private static final String SYNTH_COMMAND = "cdk synth";
+    private static final String SYNTH_COMMAND = "npx cdk synth";
     private static final String SYNTH_ID = "EBWebAppSynthesizer";
     private static final String PIPELINE_STAGE_ID = "Pre-Prod";
 
